@@ -260,32 +260,33 @@ Hello, world!</pre>
 <!-- 15: サイズの階段 -->
 <section class="slide">
   <h2>467 B から 148 KB までに、これだけ入る</h2>
-  <svg viewBox="0 0 1080 430" style="width:100%">
-    <!-- log axis: x = 250 + (log10(bytes) - log10(300)) / (log10(300000) - log10(300)) * 790 -->
+  <svg viewBox="0 0 1080 442" style="width:100%">
+    <!-- log axis: x = 250 + (log10(bytes) - log10(300)) / 3 * 790 -->
     <g font-size="14" fill="#898781">
-      <text x="388" y="424" text-anchor="middle">1 KB</text>
-      <text x="651" y="424" text-anchor="middle">10 KB</text>
-      <text x="914" y="424" text-anchor="middle">100 KB</text>
-      <text x="1046" y="424" text-anchor="start" fill="#52514e">log</text>
+      <text x="388" y="436" text-anchor="middle">1 KB</text>
+      <text x="651" y="436" text-anchor="middle">10 KB</text>
+      <text x="914" y="436" text-anchor="middle">100 KB</text>
+      <text x="1046" y="436" text-anchor="start" fill="#52514e">log</text>
     </g>
-    <line x1="388" y1="8" x2="388" y2="404" stroke="#2c2c2a"/>
-    <line x1="651" y1="8" x2="651" y2="404" stroke="#2c2c2a"/>
-    <line x1="914" y1="8" x2="914" y2="404" stroke="#2c2c2a"/>
+    <line x1="388" y1="6" x2="388" y2="412" stroke="#2c2c2a"/>
+    <line x1="651" y1="6" x2="651" y2="412" stroke="#2c2c2a"/>
+    <line x1="914" y1="6" x2="914" y2="412" stroke="#2c2c2a"/>
     <g font-size="17">
-      <!-- rows: y step 40, dot r7 -->
-      <g><text x="236" y="33" text-anchor="end" fill="#c3c2b7">Hello World</text><circle cx="300.4" cy="27" r="7" fill="#3987e5"/><text x="316" y="33" fill="#ffffff" font-weight="700" class="mono" font-size="15">467 B</text></g>
-      <g><text x="236" y="73" text-anchor="end" fill="#c3c2b7">8倍音シンセ（AudioWorklet）</text><circle cx="498.8" cy="67" r="7" fill="#3987e5"/><text x="515" y="73" fill="#ffffff" font-weight="700" class="mono" font-size="15">2,637 B</text></g>
-      <g><text x="236" y="113" text-anchor="end" fill="#c3c2b7">Canvas 2D 棒グラフ</text><circle cx="588.8" cy="107" r="7" fill="#3987e5"/><text x="605" y="113" fill="#ffffff" font-weight="700" class="mono" font-size="15">5,792 B</text></g>
-      <g><text x="236" y="153" text-anchor="end" fill="#c3c2b7">3D プロシージャル球</text><circle cx="603.5" cy="147" r="7" fill="#3987e5"/><text x="620" y="153" fill="#ffffff" font-weight="700" class="mono" font-size="15">6,586 B</text></g>
-      <g><text x="236" y="193" text-anchor="end" fill="#c3c2b7">7 バンド パラメトリック EQ</text><circle cx="666.8" cy="187" r="7" fill="#3987e5"/><text x="683" y="193" fill="#ffffff" font-weight="700" class="mono" font-size="15">11,458 B</text></g>
-      <g><text x="236" y="233" text-anchor="end" fill="#c3c2b7">WebGL 回転キューブ</text><circle cx="713.8" cy="227" r="7" fill="#3987e5"/><text x="730" y="233" fill="#ffffff" font-weight="700" class="mono" font-size="15">17,267 B</text></g>
-      <g><text x="236" y="273" text-anchor="end" fill="#c3c2b7">1-bit LLM 推論エンジン</text><circle cx="800.8" cy="267" r="7" fill="#199e70"/><text x="817" y="273" fill="#ffffff" font-weight="700" class="mono" font-size="15">36,921 B</text></g>
-      <g><text x="236" y="313" text-anchor="end" fill="#c3c2b7">アニメーションエンジン</text><circle cx="846.4" cy="307" r="7" fill="#3987e5"/><text x="863" y="313" fill="#ffffff" font-weight="700" class="mono" font-size="15">54,999 B</text></g>
-      <g><text x="236" y="353" text-anchor="end" fill="#c3c2b7">Whisper 推論エンジン</text><circle cx="894.2" cy="347" r="7" fill="#3987e5"/><text x="911" y="353" fill="#ffffff" font-weight="700" class="mono" font-size="15">83,539 B</text></g>
-      <g><text x="236" y="393" text-anchor="end" fill="#c3c2b7">GPU UI フレームワーク</text><circle cx="960.6" cy="387" r="7" fill="#3987e5"/><text x="977" y="393" fill="#ffffff" font-weight="700" class="mono" font-size="15">148,118 B</text></g>
+      <g><text x="236" y="30" text-anchor="end" fill="#c3c2b7">Hello World</text><circle cx="300.6" cy="24" r="7" fill="#3987e5"/><text x="317" y="30" fill="#ffffff" font-weight="700" class="mono" font-size="15">467 B</text></g>
+      <g><text x="236" y="64" text-anchor="end" fill="#c3c2b7">8倍音シンセ（AudioWorklet）</text><circle cx="498.8" cy="58" r="7" fill="#3987e5"/><text x="515" y="64" fill="#ffffff" font-weight="700" class="mono" font-size="15">2,637 B</text></g>
+      <g><text x="236" y="98" text-anchor="end" fill="#c3c2b7">Canvas 2D 棒グラフ</text><circle cx="588.8" cy="92" r="7" fill="#3987e5"/><text x="605" y="98" fill="#ffffff" font-weight="700" class="mono" font-size="15">5,792 B</text></g>
+      <g><text x="236" y="132" text-anchor="end" fill="#c3c2b7">3D プロシージャル球</text><circle cx="603.5" cy="126" r="7" fill="#3987e5"/><text x="620" y="132" fill="#ffffff" font-weight="700" class="mono" font-size="15">6,586 B</text></g>
+      <g><text x="236" y="166" text-anchor="end" fill="#c3c2b7">7 バンド パラメトリック EQ</text><circle cx="666.8" cy="160" r="7" fill="#3987e5"/><text x="683" y="166" fill="#ffffff" font-weight="700" class="mono" font-size="15">11,458 B</text></g>
+      <g><text x="236" y="200" text-anchor="end" fill="#c3c2b7">WebGL 回転キューブ</text><circle cx="713.8" cy="194" r="7" fill="#3987e5"/><text x="730" y="200" fill="#ffffff" font-weight="700" class="mono" font-size="15">17,267 B</text></g>
+      <g><text x="236" y="234" text-anchor="end" fill="#898781">テトリス（ゲームボーイ）</text><circle cx="786.8" cy="228" r="6.5" fill="none" stroke="#898781" stroke-width="2"/><text x="803" y="234" fill="#898781" font-weight="700" class="mono" font-size="15">32,768 B</text></g>
+      <g><text x="236" y="268" text-anchor="end" fill="#c3c2b7">1-bit LLM 推論エンジン</text><circle cx="800.8" cy="262" r="7" fill="#199e70"/><text x="817" y="268" fill="#ffffff" font-weight="700" class="mono" font-size="15">36,921 B</text></g>
+      <g><text x="236" y="302" text-anchor="end" fill="#c3c2b7">アニメーションエンジン</text><circle cx="846.4" cy="296" r="7" fill="#3987e5"/><text x="862" y="302" fill="#ffffff" font-weight="700" class="mono" font-size="15">54,999 B</text></g>
+      <g><text x="236" y="336" text-anchor="end" fill="#c3c2b7">Whisper 推論エンジン</text><circle cx="894.2" cy="330" r="7" fill="#3987e5"/><text x="910" y="336" fill="#ffffff" font-weight="700" class="mono" font-size="15">83,539 B</text></g>
+      <g><text x="236" y="370" text-anchor="end" fill="#c3c2b7">GPU UI フレームワーク</text><circle cx="960.6" cy="364" r="7" fill="#3987e5"/><text x="977" y="370" fill="#ffffff" font-weight="700" class="mono" font-size="15">148,118 B</text></g>
+      <g><text x="236" y="404" text-anchor="end" fill="#898781">Rust+wasm-bindgen で同じ棒グラフ</text><circle cx="1018.7" cy="398" r="6.5" fill="none" stroke="#898781" stroke-width="2"/><text x="1003" y="404" text-anchor="end" fill="#898781" font-weight="700" class="mono" font-size="15">≈ 249 KB</text></g>
     </g>
   </svg>
-  <p class="note">React（本体+DOM, minified+gzip 約 45 KB）より小さい 1-bit LLM エンジン。全バイナリ実測（2026-07-03）。</p>
+  <p class="note">灰色は参考点。1-bit LLM のエンジンは<strong style="color:#c3c2b7">テトリスの ROM + 4 KB</strong> で動く。同じ棒グラフを Rust + wasm-bindgen で書くと約 43 倍。Almide 分は全バイナリ実測（2026-07-03）。</p>
 </section>
 
 <!-- 16: audio -->
