@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WASM x Almide — Webナイト宮崎 2026-07-03</title>
+<style>
+  :root {
+    --bg: #0d0d0d;
+    --surface: #1a1a19;
+    --surface-2: #222220;
+    --ink: #ffffff;
+    --ink-2: #c3c2b7;
+    --muted: #898781;
+    --line: #2c2c2a;
+    --baseline: #383835;
+    --accent: #3987e5;
+    --accent-2: #199e70;
+    --accent-dim: rgba(57, 135, 229, 0.14);
+    --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; background: var(--bg); }
+  body {
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, -apple-system, "Segoe UI", "Noto Sans JP", sans-serif;
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #viewport { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #deck { width: 1280px; height: 720px; position: relative; flex: none; }
+
+  .slide {
+    position: absolute; inset: 0;
+    padding: 72px 96px 88px;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    gap: 28px;
+  }
+  .slide.active { display: flex; }
+
+  .kicker {
+    font-size: 17px; font-weight: 700; letter-spacing: 0.14em;
+    color: var(--accent); text-transform: uppercase;
+  }
+  h1 { font-size: 54px; line-height: 1.28; font-weight: 800; letter-spacing: 0.01em; }
+  h2 { font-size: 42px; line-height: 1.3; font-weight: 800; }
+  .lead { font-size: 24px; line-height: 1.7; color: var(--ink-2); }
+  .note { font-size: 17px; color: var(--muted); line-height: 1.6; }
+  .accent { color: var(--accent); }
+  .accent2 { color: var(--accent-2); }
+  strong { color: var(--ink); font-weight: 700; }
+
+  .hero-num {
+    font-size: 150px; font-weight: 800; letter-spacing: -0.02em; line-height: 1;
+    color: var(--ink);
+  }
+  .hero-num small { font-size: 60px; font-weight: 700; color: var(--ink-2); margin-left: 12px; }
+
+  .quote {
+    border-left: 4px solid var(--accent);
+    padding: 8px 0 8px 28px;
+    font-size: 27px; line-height: 1.65; font-weight: 700;
+  }
+  .quote .src { display: block; margin-top: 10px; font-size: 16px; font-weight: 400; color: var(--muted); }
+
+  pre.term {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 28px 32px; font-family: var(--mono);
+    font-size: 21px; line-height: 1.85; color: var(--ink-2); overflow: hidden;
+  }
+  pre.term .p { color: var(--accent-2); }
+  pre.term .hi { color: var(--ink); font-weight: 700; background: var(--accent-dim); border-radius: 4px; padding: 0 4px; }
+  pre.term .c { color: var(--muted); }
+  pre.code { font-size: 19px; line-height: 1.7; }
+  pre.code .kw { color: var(--accent); }
+  pre.code .fn { color: var(--accent-2); }
+  pre.code .st { color: #d9a648; }
+
+  .grid { display: grid; gap: 16px; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 20px 22px;
+  }
+  .card .t { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+  .card .d { font-size: 16px; color: var(--ink-2); line-height: 1.55; }
+  .card .badge {
+    display: inline-block; font-size: 13px; font-weight: 700; color: var(--accent);
+    background: var(--accent-dim); border-radius: 999px; padding: 2px 10px; margin-bottom: 8px;
+    letter-spacing: 0.06em;
+  }
+  .card.hot { border-color: rgba(57, 135, 229, 0.55); }
+
+  table { border-collapse: collapse; width: 100%; font-size: 19px; }
+  th, td { text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--line); line-height: 1.5; }
+  th { color: var(--muted); font-size: 15px; font-weight: 700; letter-spacing: 0.06em; }
+  td { color: var(--ink-2); }
+  td:first-child { color: var(--ink); font-weight: 600; }
+  td.num { font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 18px; }
+  tr.hot td { background: var(--accent-dim); color: var(--ink); }
+  td .ok { color: var(--accent-2); font-weight: 700; }
+  td .ng { color: var(--muted); }
+
+  ul.big { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  ul.big li { font-size: 23px; line-height: 1.6; color: var(--ink-2); padding-left: 34px; position: relative; }
+  ul.big li::before { content: "—"; position: absolute; left: 0; color: var(--accent); font-weight: 700; }
+  ul.big li strong { color: var(--ink); }
+
+  .divider { align-items: flex-start; }
+  .divider .sec-no { font-size: 26px; font-weight: 800; color: var(--accent); letter-spacing: 0.1em; }
+  .divider h1 { font-size: 64px; }
+  .divider .bar { width: 96px; height: 6px; background: var(--accent); border-radius: 3px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 12px; }
+  .chip {
+    font-size: 19px; font-weight: 600; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 999px; padding: 8px 20px;
+  }
+
+  .flow { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .flow .box {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px 18px; font-size: 18px; font-weight: 600;
+  }
+  .flow .box.src { border-color: rgba(57,135,229,.55); color: var(--ink); }
+  .flow .arr { color: var(--muted); font-size: 20px; }
+
+  svg text { font-family: inherit; }
+  svg .mono { font-family: var(--mono); }
+
+  #hud {
+    position: fixed; right: 20px; bottom: 14px; font-size: 13px; color: var(--muted);
+    font-variant-numeric: tabular-nums; z-index: 10; font-family: var(--mono);
+  }
+  #bar { position: fixed; left: 0; bottom: 0; height: 3px; background: var(--accent); width: 0; transition: width .18s ease; z-index: 10; }
+
+  .foot { position: absolute; left: 96px; bottom: 40px; font-size: 14px; color: var(--muted); letter-spacing: 0.04em; }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="deck">
+
+<!-- 1: タイトル -->
+<section class="slide">
+  <div class="kicker">Webナイト宮崎 · 2026-07-03</div>
+  <h1>467バイトの Hello World から、<br>ブラウザで動く <span class="accent">1-bit LLM</span> まで</h1>
+  <p class="lead">自作言語 Almide で見てきた WebAssembly の現在地</p>
+  <p class="note">@O6lvl4 — Almide という「LLM のための言語」を作っています</p>
+</section>
+
+<!-- 2: フック -->
+<section class="slide">
+  <div class="kicker">まずこれを見てください</div>
+  <pre class="term"><span class="p">$</span> almide build hello.almd --target wasm -o hello.wasm
+<span class="p">$</span> ls -l hello.wasm
+-rw-r--r--  1 o6lvl4  staff  <span class="hi">467</span>  hello.wasm
+<span class="p">$</span> wasmtime hello.wasm
+Hello, world!</pre>
+  <div class="hero-num">467 <small>bytes</small></div>
+  <p class="note">kB ですらない。rustc も LLVM も呼ばれていない。</p>
+</section>
+
+<!-- 3: 小ささの根拠 -->
+<section class="slide">
+  <h2>最初から、無駄がない</h2>
+  <div class="grid cols-2" style="align-items:start">
+    <table>
+      <tr><th>プログラム</th><th style="text-align:right">--target wasm 生出力</th></tr>
+      <tr><td>Hello World</td><td class="num" style="text-align:right">467 B</td></tr>
+      <tr><td>Fibonacci（再帰）</td><td class="num" style="text-align:right">682 B</td></tr>
+      <tr><td>FizzBuzz</td><td class="num" style="text-align:right">809 B</td></tr>
+      <tr><td>クロージャ + call_indirect</td><td class="num" style="text-align:right">812 B</td></tr>
+      <tr><td>Variant + match + float</td><td class="num" style="text-align:right">1,105 B</td></tr>
+    </table>
+    <ul class="big">
+      <li>LLVM なし・Cranelift なし。コンパイラが <strong>WASM 3.0 バイトコードを直書き</strong>（tail calls / multi-memory）</li>
+      <li><strong><code>wasm-opt -O3</code> をかけても 1〜5 バイトしか縮まない</strong></li>
+      <li>アロケータ・文字列処理・ランタイム同梱の自己完結バイナリ。バンプアロケータは約 20 バイトのコード</li>
+    </ul>
+  </div>
+</section>
+
+<!-- 4: §1 divider -->
+<section class="slide divider">
+  <div class="sec-no">§1</div>
+  <h1>WASM の現在地</h1>
+  <div class="bar"></div>
+  <p class="lead">もう「ブラウザで速くするやつ」ではない。</p>
+</section>
+
+<!-- 5: 8クラスタ -->
+<section class="slide">
+  <h2>WASM が動いている場所 — 8 クラスタ</h2>
+  <div class="grid cols-4">
+    <div class="card"><div class="t">① ブラウザ</div><div class="d">Figma / Photoshop Web / Unity / FFmpeg.wasm — 圧倒的成熟</div></div>
+    <div class="card"><div class="t">② Edge / サーバレス</div><div class="d">Cloudflare Workers / Fastly — cold start 約 1ms</div></div>
+    <div class="card"><div class="t">③ プラグイン基盤</div><div class="d">Envoy / Shopify Functions / Zed — 覇権争い中</div></div>
+    <div class="card"><div class="t">④ ブロックチェーン</div><div class="d">Solana / NEAR / Polkadot — 決定論が核</div></div>
+    <div class="card"><div class="t">⑤ 組込み</div><div class="d">WAMR / wasm3 / ESP32 — OTA 更新 = .wasm 配布</div></div>
+    <div class="card"><div class="t">⑥ データ / DB</div><div class="d">SQLite-wasm / DuckDB-wasm / Postgres UDF (RFC)</div></div>
+    <div class="card hot"><div class="t">⑦ AI 実行サンドボックス</div><div class="d">MCP サーバ / エージェントのツール実行 — 2024–26 急成長</div></div>
+    <div class="card"><div class="t">⑧ AI 推論</div><div class="d">ONNX Runtime Web / whisper.cpp — 端末内 LLM</div></div>
+  </div>
+  <p class="note">①②④⑥⑧ はすでに本番技術。ブラウザは 8 分の 1 にすぎない。</p>
+</section>
+
+<!-- 6: コンテナ→WASM -->
+<section class="slide">
+  <h2>置き換えつつあるもの</h2>
+  <table>
+    <tr><th>従来</th><th>WASM 版</th><th>何が変わるか</th></tr>
+    <tr><td>Docker コンテナ</td><td>.wasm モジュール</td><td>cold start <strong>300ms → 1ms</strong></td></tr>
+    <tr><td>Electron アプリ（100MB+）</td><td>Tauri + WASM</td><td>数 MB・起動瞬時</td></tr>
+    <tr><td>npm パッケージ（任意コード実行）</td><td>capability 付き component</td><td>supply chain 攻撃が<strong>構造的に不可能</strong></td></tr>
+    <tr><td>ホストごとの独自 plugin API</td><td>Component Model + WIT</td><td>1 つの ABI で全ホスト</td></tr>
+  </table>
+  <div class="quote">「コンテナ → WASM」は「VM → コンテナ」と同じ意味を持ちうる 1 段階。<br>2014 年の Docker revolution が、2025–2030 に反復される。</div>
+</section>
+
+<!-- 7: 6つの構造変化 -->
+<section class="slide">
+  <h2>性能改善ではなく、「不可能だったこと」が可能になる</h2>
+  <div class="grid cols-3">
+    <div class="card"><div class="badge">A</div><div class="t">ユニバーサル実行単位</div><div class="d">同じ .wasm がブラウザ・エッジ・DAW・DB・マイコンで動く。25 年越しの write once, run everywhere</div></div>
+    <div class="card"><div class="badge">B</div><div class="t">zero-trust supply chain</div><div class="d">left-pad が fs を読めない世界。capability にない API は存在しないのと同じ</div></div>
+    <div class="card"><div class="badge">C</div><div class="t">1ms cold-start</div><div class="d">「関数呼び出しごとに新インスタンス」が経済的に成立。課金単位が変わる</div></div>
+    <div class="card"><div class="badge">D</div><div class="t">プラグイン経済の民主化</div><div class="d">VS Code 拡張が Figma で動く。ホストは WIT layer を 1 枚実装するだけ</div></div>
+    <div class="card"><div class="badge">E</div><div class="t">Edge と Local の融合</div><div class="d">同じバイナリが CDN エッジでも完全オフラインの端末でも。local-first の最終形</div></div>
+    <div class="card hot"><div class="badge">F</div><div class="t">AI 生成コードの安全実行</div><div class="d">プロセス分離は重い、コンテナは大きい。<strong>MMU より細かい粒度で capability を型付けできるのは WASM だけ</strong></div></div>
+  </div>
+</section>
+
+<!-- 8: §2 divider -->
+<section class="slide divider">
+  <div class="sec-no">§2</div>
+  <h1>Almide</h1>
+  <div class="bar"></div>
+  <p class="lead"><strong style="color:var(--ink)">“The language LLMs can write most accurately.”</strong><br>LLM のために作った言語が、WASM の申し子だった。</p>
+</section>
+
+<!-- 9: Almideとは -->
+<section class="slide">
+  <h2>Almide — LLM コード生成に最適化した言語</h2>
+  <div class="grid cols-2" style="align-items:start">
+    <ul class="big" style="gap:12px">
+      <li>静的型付け・関数型。<strong>Rust と WASM のデュアルターゲット</strong></li>
+      <li>stdlib <strong>834 関数 / 39 モジュール</strong>、テスト 2,681、ICE 0</li>
+      <li>native と wasm の観測可能挙動は<strong>契約で同一保証</strong></li>
+      <li>曖昧さを削る: 1 概念 1 記法、<code>|&gt;</code> パイプライン、<code>fan</code> 並行</li>
+    </ul>
+    <pre class="term code"><span class="kw">effect fn</span> <span class="fn">main</span>() -&gt; Unit = {
+  <span class="kw">let</span> (sum, product) = <span class="kw">fan</span> {
+    slow_add(3, 4)   <span class="c">// 並行実行</span>
+    slow_mul(3, 4)   <span class="c">// Err なら fail-fast</span>
+  }
+  println(<span class="st">"sum = "</span> + int.to_string(sum))
+}
+
+<span class="c">// パイプラインが第一級のイディオム</span>
+<span class="kw">fn</span> <span class="fn">parse_row</span>(line: String) -&gt; List[String] =
+  string.split(line, <span class="st">","</span>) |&gt; list.map((c) =&gt; string.trim(c))</pre>
+  </div>
+</section>
+
+<!-- 10: MSR -->
+<section class="slide">
+  <h2>設計の物差しは MSR — AI の修正に生き残る率</h2>
+  <p class="lead" style="font-size:21px">診断フィードバック付き最大 3 リトライ後に、コンパイルとテストが通った率。30 タスクを日次 CI で計測。</p>
+  <svg viewBox="0 0 1080 300" style="width:100%">
+    <!-- axis -->
+    <line x1="230" y1="20" x2="230" y2="260" stroke="#383835" stroke-width="2"/>
+    <g font-size="15" fill="#898781">
+      <text x="230" y="288" text-anchor="middle">0%</text>
+      <text x="630" y="288" text-anchor="middle">50%</text>
+      <text x="1030" y="288" text-anchor="middle">100%</text>
+    </g>
+    <line x1="630" y1="20" x2="630" y2="260" stroke="#2c2c2a" stroke-width="1"/>
+    <line x1="1030" y1="20" x2="1030" y2="260" stroke="#2c2c2a" stroke-width="1"/>
+    <!-- bars: 800px = 100% -->
+    <g font-size="20" fill="#ffffff" font-weight="600">
+      <text x="214" y="70" text-anchor="end" fill="#c3c2b7">Claude (CLI)</text>
+      <rect x="230" y="44" width="773.6" height="40" rx="4" fill="#3987e5"/>
+      <text x="1016" y="70" text-anchor="end" font-weight="800">97%</text>
+      <text x="214" y="150" text-anchor="end" fill="#c3c2b7">Llama 3.3 70B</text>
+      <rect x="230" y="124" width="613.6" height="40" rx="4" fill="#3987e5"/>
+      <text x="856" y="150" font-weight="800">77%</text>
+      <text x="214" y="230" text-anchor="end" fill="#c3c2b7">Llama 3.1 8B</text>
+      <rect x="230" y="204" width="346.4" height="40" rx="4" fill="#3987e5"/>
+      <text x="589" y="230" font-weight="800">43%</text>
+    </g>
+  </svg>
+  <p class="note">出典: almide-dojo（2026-07-02 のデイリー run、Claude は 29/30）。8B の小型モデルでも 4 割超が診断ループで生還する。</p>
+</section>
+
+<!-- 11: Perceus -->
+<section class="slide">
+  <h2>GC なし・注釈なし・リークなし — を機械証明</h2>
+  <pre class="term code" style="font-size:22px"><span class="kw">theorem</span> <span class="fn">perceus_all_heap_freed</span> (fb : FnBody) :
+    allHeapFreed (perceusTransform fb)</pre>
+  <ul class="big">
+    <li>メモリ管理は <strong>Perceus 参照カウント</strong>。GC ポーズなし、Rust のような所有権注釈もなし</li>
+    <li>「どんなプログラムでも、全ヒープ確保が全実行経路で解放される」ことを <strong>Lean 4 が検証（22+ theorems, sorry 0）</strong></li>
+    <li>紙の上の証明ではない — コンパイラの verify パイプラインで実行され、<strong>CI が未証明のマージをブロック</strong>する</li>
+  </ul>
+</section>
+
+<!-- 12: 二層防御 -->
+<section class="slide">
+  <h2>効果システム × WASM — サンドボックスが二層になる</h2>
+  <div class="grid cols-2">
+    <div class="card">
+      <div class="badge">ビルド時（型）</div>
+      <div class="t">effect 7 カテゴリを自動推論</div>
+      <div class="d" style="font-size:18px; line-height:1.7">IO / Net / Env / Time / Rand / Fan / Log を stdlib 使用から推論。<br><code>almide.toml</code> の <code>[permissions]</code> にない capability は<strong>ビルドエラー</strong>になる。</div>
+    </div>
+    <div class="card">
+      <div class="badge">実行時（WASM）</div>
+      <div class="t">capability サンドボックス</div>
+      <div class="d" style="font-size:18px; line-height:1.7">WASI import をロード時に検証し、宣言外の API は<strong>そもそもリンクされない</strong>。ランタイムが 2 枚目の壁になる。</div>
+    </div>
+  </div>
+  <div class="quote">「left-pad が fs を読めない世界」を、型とランタイムの両方で。</div>
+</section>
+
+<!-- 13: 競合比較 -->
+<section class="slide">
+  <h2>この 4 点を同時に満たす言語が、他にない</h2>
+  <table style="font-size:18px">
+    <tr><th></th><th>tiny binary</th><th>effect / capability</th><th>汎用性</th><th>小さい言語仕様</th></tr>
+    <tr class="hot"><td>Almide</td><td><span class="ok">✓</span> 467 B〜</td><td><span class="ok">✓</span> effect system</td><td><span class="ok">✓</span> CLI / Web / Agent</td><td><span class="ok">✓</span></td></tr>
+    <tr><td>Rust</td><td><span class="ng">✗ 50 KB+（wasm-bindgen）</span></td><td><span class="ng">✗</span></td><td><span class="ok">✓</span></td><td><span class="ng">✗</span></td></tr>
+    <tr><td>Zig</td><td><span class="ok">✓</span>（手作業）</td><td><span class="ng">✗</span></td><td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+    <tr><td>TinyGo</td><td><span class="ng">✗ 数十 KB</span></td><td><span class="ng">✗</span></td><td><span class="ok">✓</span></td><td><span class="ok">✓</span></td></tr>
+    <tr><td>AssemblyScript</td><td><span class="ok">✓</span></td><td><span class="ng">✗（GC 前提）</span></td><td><span class="ng">△</span></td><td><span class="ok">✓</span></td></tr>
+    <tr><td>MoonBit</td><td><span class="ok">✓</span></td><td><span class="ng">△</span></td><td><span class="ng">△</span></td><td><span class="ok">✓</span></td></tr>
+  </table>
+  <p class="note">「WASM づくし」の世界で効くのは、小ささ・capability・汎用性・仕様の小ささの掛け算。</p>
+</section>
+
+<!-- 14: §3 divider -->
+<section class="slide divider">
+  <div class="sec-no">§3</div>
+  <h1>デモパレード</h1>
+  <div class="bar"></div>
+  <p class="lead">サイズの階段を登る — 全部 Almide 製・全部実測値。</p>
+</section>
+
+<!-- 15: サイズの階段 -->
+<section class="slide">
+  <h2>467 B から 148 KB までに、これだけ入る</h2>
+  <svg viewBox="0 0 1080 430" style="width:100%">
+    <!-- log axis: x = 250 + (log10(bytes) - log10(300)) / (log10(300000) - log10(300)) * 790 -->
+    <g font-size="14" fill="#898781">
+      <text x="388" y="424" text-anchor="middle">1 KB</text>
+      <text x="651" y="424" text-anchor="middle">10 KB</text>
+      <text x="914" y="424" text-anchor="middle">100 KB</text>
+      <text x="1046" y="424" text-anchor="start" fill="#52514e">log</text>
+    </g>
+    <line x1="388" y1="8" x2="388" y2="404" stroke="#2c2c2a"/>
+    <line x1="651" y1="8" x2="651" y2="404" stroke="#2c2c2a"/>
+    <line x1="914" y1="8" x2="914" y2="404" stroke="#2c2c2a"/>
+    <g font-size="17">
+      <!-- rows: y step 40, dot r7 -->
+      <g><text x="236" y="33" text-anchor="end" fill="#c3c2b7">Hello World</text><circle cx="300.4" cy="27" r="7" fill="#3987e5"/><text x="316" y="33" fill="#ffffff" font-weight="700" class="mono" font-size="15">467 B</text></g>
+      <g><text x="236" y="73" text-anchor="end" fill="#c3c2b7">8倍音シンセ（AudioWorklet）</text><circle cx="498.8" cy="67" r="7" fill="#3987e5"/><text x="515" y="73" fill="#ffffff" font-weight="700" class="mono" font-size="15">2,637 B</text></g>
+      <g><text x="236" y="113" text-anchor="end" fill="#c3c2b7">Canvas 2D 棒グラフ</text><circle cx="588.8" cy="107" r="7" fill="#3987e5"/><text x="605" y="113" fill="#ffffff" font-weight="700" class="mono" font-size="15">5,792 B</text></g>
+      <g><text x="236" y="153" text-anchor="end" fill="#c3c2b7">3D プロシージャル球</text><circle cx="603.5" cy="147" r="7" fill="#3987e5"/><text x="620" y="153" fill="#ffffff" font-weight="700" class="mono" font-size="15">6,586 B</text></g>
+      <g><text x="236" y="193" text-anchor="end" fill="#c3c2b7">7 バンド パラメトリック EQ</text><circle cx="666.8" cy="187" r="7" fill="#3987e5"/><text x="683" y="193" fill="#ffffff" font-weight="700" class="mono" font-size="15">11,458 B</text></g>
+      <g><text x="236" y="233" text-anchor="end" fill="#c3c2b7">WebGL 回転キューブ</text><circle cx="713.8" cy="227" r="7" fill="#3987e5"/><text x="730" y="233" fill="#ffffff" font-weight="700" class="mono" font-size="15">17,267 B</text></g>
+      <g><text x="236" y="273" text-anchor="end" fill="#c3c2b7">1-bit LLM 推論エンジン</text><circle cx="800.8" cy="267" r="7" fill="#199e70"/><text x="817" y="273" fill="#ffffff" font-weight="700" class="mono" font-size="15">36,921 B</text></g>
+      <g><text x="236" y="313" text-anchor="end" fill="#c3c2b7">アニメーションエンジン</text><circle cx="846.4" cy="307" r="7" fill="#3987e5"/><text x="863" y="313" fill="#ffffff" font-weight="700" class="mono" font-size="15">54,999 B</text></g>
+      <g><text x="236" y="353" text-anchor="end" fill="#c3c2b7">Whisper 推論エンジン</text><circle cx="894.2" cy="347" r="7" fill="#3987e5"/><text x="911" y="353" fill="#ffffff" font-weight="700" class="mono" font-size="15">83,539 B</text></g>
+      <g><text x="236" y="393" text-anchor="end" fill="#c3c2b7">GPU UI フレームワーク</text><circle cx="960.6" cy="387" r="7" fill="#3987e5"/><text x="977" y="393" fill="#ffffff" font-weight="700" class="mono" font-size="15">148,118 B</text></g>
+    </g>
+  </svg>
+  <p class="note">React（本体+DOM, minified+gzip 約 45 KB）より小さい 1-bit LLM エンジン。全バイナリ実測（2026-07-03）。</p>
+</section>
+
+<!-- 16: audio -->
+<section class="slide">
+  <div class="kicker">demo 1 · 音</div>
+  <h2>2,637 バイトで、音が鳴る</h2>
+  <ul class="big">
+    <li>AudioWorklet（音声専用スレッド）の中で <strong>8 倍音加算シンセ</strong>が動く。ソースは 61 行の .almd</li>
+    <li>制約の世界: <strong>128 サンプルごと・予算 2.6ms・malloc / IO / DOM 禁止</strong></li>
+    <li>実測 128 フレーム <strong>18µs</strong> — 予算 2,667µs の <strong>0.7%</strong>、リアルタイム余裕 <strong>約 140 倍</strong>（SIMD もバッチングもなしで）</li>
+  </ul>
+  <p class="note">almide/audio-poc — 2026-04 実機検証済み</p>
+</section>
+
+<!-- 17: graphics -->
+<section class="slide">
+  <div class="kicker">demo 2 · 絵</div>
+  <h2>グラフィックスも直 emit で桁が変わる</h2>
+  <div class="grid cols-3">
+    <div class="card"><div class="t">Canvas 2D</div><div class="d">棒グラフデモ一式 <strong>5,792 B</strong><br>Rust + wasm-bindgen 同等品の <strong>1/43</strong></div></div>
+    <div class="card"><div class="t">WebGL</div><div class="d">回転キューブ <strong>17,267 B</strong><br>web-sys 構成の <strong>1/18</strong></div></div>
+    <div class="card"><div class="t">obsid（3D ランタイム）</div><div class="d">メッシュ + オービットカメラ + ライティング。<strong>同じ .wasm がブラウザでも、wasmtime + wgpu 経由でデスクトップでも動く</strong></div></div>
+  </div>
+  <div class="quote" style="font-size:24px">Write once in Almide — same binary in browser and desktop.</div>
+</section>
+
+<!-- 18: ceangal -->
+<section class="slide">
+  <div class="kicker">demo 3 · GPU UI</div>
+  <h2>UI フレームワークごと WASM に入れる — 145 KB</h2>
+  <ul class="big">
+    <li>全 UI 要素を <strong>WebGPU compute shader で描画</strong>（Canvas 2D 不使用）</li>
+    <li><strong>Yoga 互換 Flexbox</strong>（準拠テスト 74 本）、仮想リスト、リアクティブ状態管理</li>
+    <li>DOM オーバーレイで<strong>テキスト選択・コピー・IME 入力・ARIA</strong> まで成立</li>
+  </ul>
+  <pre class="term" style="font-size:19px"><span class="c"># ライブデモ（WebGPU = Chrome 系で）</span>
+https://almide-graphics.github.io/ceangal/
+https://almide-graphics.github.io/ceangal/stress.html  <span class="c"># 5000 要素 + FPS HUD</span></pre>
+</section>
+
+<!-- 19: playground -->
+<section class="slide">
+  <div class="kicker">demo 4 · コンパイラ</div>
+  <h2>WASM が、その場で WASM を生む</h2>
+  <ul class="big">
+    <li>Almide コンパイラ（Rust 製）を丸ごと WASM 化 — <strong>1.72 MB がブラウザで動く</strong></li>
+    <li>parse → 型検査 → codegen まで<strong>全部クライアントサイド</strong>。サーバ往復ゼロ</li>
+    <li>出力された .wasm をその場で instantiate して実行。TypeScript / Rust へのトランスパイル表示も</li>
+  </ul>
+  <pre class="term" style="font-size:19px">https://almide.github.io/playground/</pre>
+</section>
+
+<!-- 20: bonsai -->
+<section class="slide">
+  <div class="kicker">demo 5 · 本命</div>
+  <h2>248 MB のモデルを、37 KB のエンジンが動かす</h2>
+  <ul class="big" style="gap:12px">
+    <li><strong>Bonsai-1.7B</strong> — 最初から 1-bit で学習された LLM（実効 1.125 bit/weight、Qwen3 アーキテクチャ）</li>
+    <li>GGUF パース・GQA・RoPE・KV cache・sampling まで<strong>全部 .almd</strong>（約 4,000 行、トークナイザのみ transformers.js）</li>
+    <li>ブラウザ CPU で 0.67 tok/s — <strong>速さではなく「純度と小ささ」のデモ</strong>。それでもチャットが成立する</li>
+  </ul>
+  <pre class="term" style="font-size:19px">https://almide.github.io/bonsai-almide/</pre>
+</section>
+
+<!-- 21: porta -->
+<section class="slide">
+  <div class="kicker">demo 6 · AI サンドボックス</div>
+  <h2>LLM が書いたコードを、安心して実行する</h2>
+  <pre class="term" style="font-size:18px"><span class="p">$</span> porta run curl -- https://example.com                      <span class="c"># OK</span>
+<span class="p">$</span> porta run curl --allow-net '*:443' -- https://example.com  <span class="c"># OK</span>
+<span class="p">$</span> porta run curl --allow-net '*:80'  -- https://example.com  <span class="c"># exit 7 — 443 を遮断</span></pre>
+  <ul class="big" style="gap:12px">
+    <li>WASM 分離（<strong>capability 9 種 deny-by-default</strong>・宣言外の WASI import はロード時に拒否）+ macOS Seatbelt の二層</li>
+    <li><strong>Docker 不要・単一バイナリ</strong>。Claude Code をネットワーク・FS 制限つきで走らせられる</li>
+    <li>WASM_WORLDVIEW の ⑦「AI 実行サンドボックス」層の先行実装。ほぼ全部 Almide 製（テスト 98 本）</li>
+  </ul>
+</section>
+
+<!-- 22: npm -->
+<section class="slide">
+  <div class="kicker">§4 · 手元に届く形</div>
+  <h2>TS を知っていれば、npm に WASM を出せる</h2>
+  <div class="flow">
+    <div class="box src">mylib.almd</div><div class="arr">→ 1 コマンド →</div>
+    <div class="box">.wasm</div><div class="box">.d.ts</div><div class="box">ESM glue</div><div class="box">package.json</div>
+    <div class="arr">→</div><div class="box src">npm publish（実測 11.3 秒）</div>
+  </div>
+  <svg viewBox="0 0 1080 150" style="width:100%">
+    <g font-size="18" fill="#ffffff">
+      <text x="250" y="42" text-anchor="end" fill="#c3c2b7">Almide</text>
+      <rect x="266" y="18" width="93" height="36" rx="4" fill="#3987e5"/>
+      <text x="371" y="42" font-weight="800" class="mono" font-size="16">1,490 B</text>
+      <text x="250" y="112" text-anchor="end" fill="#c3c2b7">Rust + wasm-bindgen</text>
+      <rect x="266" y="88" width="700" height="36" rx="4" fill="#52514e"/>
+      <text x="978" y="112" font-weight="800" class="mono" font-size="16" fill="#c3c2b7">11,225 B</text>
+    </g>
+    <text x="266" y="146" font-size="14" fill="#898781">同一処理の wasm バンドル（両者 wasm-opt -O3, Node 22）— 7.53 倍小、matmul 256² は 1.84 倍速</text>
+  </svg>
+  <p class="note">Node / Bun / Deno / Browser / wasmtime / wasmtime-py の 6 ランタイムで検証済み。型は Almide → TS へ自動写像（variant → union など 19 型）。</p>
+</section>
+
+<!-- 23: 20言語 -->
+<section class="slide">
+  <h2>1 本の .almd が、20 言語から呼べる</h2>
+  <div class="chips">
+    <span class="chip">Python</span><span class="chip">Go</span><span class="chip">Rust</span><span class="chip">JavaScript</span><span class="chip">Swift</span><span class="chip">Kotlin</span><span class="chip">Java</span><span class="chip">C#</span><span class="chip">Ruby</span><span class="chip">Dart</span><span class="chip">Julia</span><span class="chip">Elixir</span><span class="chip">PHP</span><span class="chip">Lua</span><span class="chip">Zig</span><span class="chip">Nim</span><span class="chip">Scala</span><span class="chip">C</span><span class="chip">C++</span><span class="chip">PowerShell</span>
+  </div>
+  <ul class="big">
+    <li>コンパイラが吐く <strong>interface.json</strong>（ABI レイアウト込み）だけを見て、各言語のバインディングを自動生成</li>
+    <li>生成器 21 本（20 言語 + Almide 自身）も<strong>全部 Almide 製</strong>。UniFFI / PyO3 / napi-rs 不使用</li>
+    <li>Component Model / WIT はこの延長線 — 言語非依存 ABI が「初めて小さいバイナリと両立する」</li>
+  </ul>
+</section>
+
+<!-- 24: seven runtimes -->
+<section class="slide">
+  <div class="kicker">§5 · この先</div>
+  <h2>One file. Seven runtimes.</h2>
+  <div class="flow" style="gap:10px">
+    <div class="box src">almide/dsp — リバーブ 1 ファイル（約 200 行）</div>
+    <div class="arr">→</div>
+    <div class="box">Browser AudioWorklet</div>
+    <div class="box">Node（CI 波形テスト）</div>
+    <div class="box">CLAP</div>
+    <div class="box">VST3</div>
+    <div class="box">AU</div>
+    <div class="box">porta CLI</div>
+    <div class="box">ESP32</div>
+  </div>
+  <div class="quote">One file. Seven runtimes. All realtime-safe.<br>Total binaries under 100 KB.<span class="src">ロードマップ（AUDIO_INITIATIVE）— 最初の 1 段「AudioWorklet で鳴る」は 2,637 B で実証済み</span></div>
+  <p class="note">「realtime-safe を型で保証する汎用言語」のポジションは、いまも空席。</p>
+</section>
+
+<!-- 25: まとめ -->
+<section class="slide">
+  <h2>まとめ — WASM は次の Docker</h2>
+  <ul class="big" style="gap:22px">
+    <li>WASM は「ブラウザの技術」から<strong>「言語非依存のユニバーサル実行単位」</strong>になった — 8 クラスタで本番稼働中</li>
+    <li>おもちゃではない — Almide 製の実用アプリ 6 本 + ライブラリ 3 本（<strong>約 13,600 行</strong>）が今日も動いている</li>
+    <li>LLM 時代の安全実行基盤は WASM が本命 — <strong>tiny binary × effect × capability</strong> はそのための組み合わせ</li>
+  </ul>
+  <div class="quote" style="margin-top:8px">WASM づくしで世界を組む — その世界は、もう動き始めている。</div>
+</section>
+
+<!-- 26: links -->
+<section class="slide">
+  <h2>今日の URL</h2>
+  <table style="font-size:20px">
+    <tr><td>Playground（ブラウザ内コンパイル）</td><td class="num">almide.github.io/playground/</td></tr>
+    <tr><td>Bonsai — 1-bit LLM チャット</td><td class="num">almide.github.io/bonsai-almide/</td></tr>
+    <tr><td>ceangal — WebGPU UI（Chrome 系）</td><td class="num">almide-graphics.github.io/ceangal/</td></tr>
+    <tr><td>MSR 日次ダッシュボード</td><td class="num">almide.github.io/almide-dojo/</td></tr>
+    <tr><td>言語本体</td><td class="num">github.com/almide/almide</td></tr>
+    <tr><td>このスライド</td><td class="num">o6lvl4.github.io/O6lvl4-webnight-miyazaki-20260703-slide/</td></tr>
+  </table>
+  <p class="lead">ありがとうございました 🙌 — @O6lvl4</p>
+</section>
+
+</div></div>
+
+<div id="bar"></div>
+<div id="hud"></div>
+
+<script>
+(function () {
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const hud = document.getElementById('hud');
+  const bar = document.getElementById('bar');
+  let i = 0;
+
+  function clamp(n) { return Math.max(0, Math.min(slides.length - 1, n)); }
+  function show(n, push) {
+    i = clamp(n);
+    slides.forEach((s, k) => s.classList.toggle('active', k === i));
+    hud.textContent = (i + 1) + ' / ' + slides.length;
+    bar.style.width = ((i + 1) / slides.length * 100) + '%';
+    if (push !== false) location.hash = '#' + (i + 1);
+  }
+  function fit() {
+    const s = Math.min(innerWidth / 1280, innerHeight / 720);
+    document.getElementById('deck').style.transform = 'scale(' + s + ')';
+  }
+
+  addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); show(i + 1); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); show(i - 1); }
+    else if (e.key === 'Home') show(0);
+    else if (e.key === 'End') show(slides.length - 1);
+  });
+  addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    show(e.clientX > innerWidth / 2 ? i + 1 : i - 1);
+  });
+  let tx = null;
+  addEventListener('touchstart', (e) => { tx = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', (e) => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    if (Math.abs(dx) > 40) show(dx < 0 ? i + 1 : i - 1);
+    tx = null;
+  }, { passive: true });
+  addEventListener('hashchange', () => show((parseInt(location.hash.slice(1), 10) || 1) - 1, false));
+  addEventListener('resize', fit);
+
+  fit();
+  show((parseInt(location.hash.slice(1), 10) || 1) - 1, false);
+})();
+</script>
+</body>
+</html>
