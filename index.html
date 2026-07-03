@@ -158,11 +158,17 @@
 <!-- 2: フック -->
 <section class="slide">
   <div class="kicker">まずこれを見てください</div>
-  <pre class="term"><span class="p">$</span> almide build hello.almd --target wasm -o hello.wasm
+  <div class="grid cols-2">
+    <pre class="term code" style="font-size:19px"><span class="c">// hello.almd — ソースはこれで全部</span>
+<span class="kw">fn</span> <span class="fn">main</span>() -&gt; Unit = {
+  println(<span class="st">"Hello, world!"</span>)
+}</pre>
+    <pre class="term" style="font-size:19px"><span class="p">$</span> almide build hello.almd --target wasm
 <span class="p">$</span> ls -l hello.wasm
--rw-r--r--  1 o6lvl4  staff  <span class="hi">486</span>  hello.wasm
+-rw-r--r--  1 o6lvl4  staff  <span class="hi">486</span>
 <span class="p">$</span> wasmtime hello.wasm
 Hello, world!</pre>
+  </div>
   <div class="hero-num">486 <small>bytes</small></div>
   <p class="note">kB ですらない。rustc も LLVM も呼ばれていない。</p>
 </section>
