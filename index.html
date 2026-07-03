@@ -95,6 +95,7 @@
     letter-spacing: 0.06em;
   }
   .card.hot { border-color: rgba(57, 135, 229, 0.55); }
+  .card.prod { border-color: rgba(25, 158, 112, 0.6); }
 
   table { border-collapse: collapse; width: 100%; font-size: 19px; }
   th, td { text-align: left; padding: 12px 18px; border-bottom: 1px solid var(--line); line-height: 1.5; }
@@ -191,16 +192,16 @@ Hello, world!</pre>
 <section class="slide">
   <h2>WASM が動いている場所 — 8 クラスタ</h2>
   <div class="grid cols-4">
-    <div class="card"><div class="t">① ブラウザ</div><div class="d">Figma / Photoshop Web / Unity / FFmpeg.wasm — 圧倒的成熟</div></div>
-    <div class="card"><div class="t">② Edge / サーバレス</div><div class="d">Fastly Compute は WASM ネイティブで起動 35µs。Cloudflare Workers も WASM 対応</div></div>
+    <div class="card prod"><div class="t">① ブラウザ</div><div class="d">Figma / Photoshop Web / Unity / FFmpeg.wasm — 圧倒的成熟</div></div>
+    <div class="card prod"><div class="t">② Edge / サーバレス</div><div class="d">Fastly Compute は WASM ネイティブで起動 35µs。Cloudflare Workers も WASM 対応</div></div>
     <div class="card"><div class="t">③ プラグイン基盤</div><div class="d">Envoy / Shopify Functions / Zed — 覇権争い中</div></div>
-    <div class="card"><div class="t">④ ブロックチェーン</div><div class="d">NEAR / CosmWasm / Internet Computer — 決定論が核</div></div>
+    <div class="card prod"><div class="t">④ ブロックチェーン</div><div class="d">NEAR / CosmWasm / Internet Computer — 決定論が核</div></div>
     <div class="card"><div class="t">⑤ 組込み</div><div class="d">WAMR / ESP32 — OTA 更新 = .wasm 配布</div></div>
-    <div class="card"><div class="t">⑥ データ / DB</div><div class="d">SQLite-wasm / DuckDB-wasm（Postgres は拡張で実験段階）</div></div>
+    <div class="card prod"><div class="t">⑥ データ / DB</div><div class="d">SQLite-wasm / DuckDB-wasm（Postgres は拡張で実験段階）</div></div>
     <div class="card"><div class="t">⑦ AI 実行サンドボックス</div><div class="d">MCP サーバ / エージェントのツール実行 — 2024–26 急成長</div></div>
-    <div class="card"><div class="t">⑧ AI 推論</div><div class="d">ONNX Runtime Web / whisper.cpp — 端末内 LLM</div></div>
+    <div class="card prod"><div class="t">⑧ AI 推論</div><div class="d">ONNX Runtime Web / whisper.cpp — 端末内 LLM</div></div>
   </div>
-  <p class="note">①②④⑥⑧ はすでに本番技術。ブラウザは 8 分の 1 にすぎない。</p>
+  <p class="note"><span style="color:var(--accent-2);font-weight:700">緑枠</span> はすでに本番技術。ブラウザは 8 分の 1 にすぎない。</p>
 </section>
 
 <!-- 8: 道具紹介 -->
