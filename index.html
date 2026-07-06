@@ -150,7 +150,7 @@
 <!-- 1: タイトル -->
 <section class="slide">
   <div class="kicker">Webナイト宮崎 · 2026-07-03</div>
-  <h1>486バイトの Hello World から、<br>ブラウザで動く <span class="accent">LLM</span> まで</h1>
+  <h1>476バイトの Hello World から、<br>ブラウザで動く <span class="accent">LLM</span> まで</h1>
   <p class="lead">自作言語 Almide で見てきた WebAssembly の現在地</p>
   <p class="note">@O6lvl4 — Almide という「LLM のための言語」を作っています</p>
 </section>
@@ -165,11 +165,11 @@
 }</pre>
     <pre class="term" style="font-size:19px"><span class="p">$</span> almide build hello.almd --target wasm
 <span class="p">$</span> ls -l hello.wasm
--rw-r--r--  1 o6lvl4  staff  <span class="hi">486</span>
+-rw-r--r--  1 o6lvl4  staff  <span class="hi">476</span>
 <span class="p">$</span> wasmtime hello.wasm
 Hello, world!</pre>
   </div>
-  <div class="hero-num">486 <small>bytes</small></div>
+  <div class="hero-num">476 <small>bytes</small></div>
   <p class="note">kB ですらない。rustc も LLVM も呼ばれていない。</p>
 </section>
 
@@ -179,15 +179,15 @@ Hello, world!</pre>
   <div class="grid cols-2" style="align-items:start">
     <table>
       <tr><th>プログラム</th><th style="text-align:right">.wasm のサイズ</th></tr>
-      <tr><td>Hello World</td><td class="num" style="text-align:right">486 B</td></tr>
-      <tr><td>Fibonacci（再帰）</td><td class="num" style="text-align:right">795 B</td></tr>
-      <tr><td>FizzBuzz</td><td class="num" style="text-align:right">918 B</td></tr>
-      <tr><td>クロージャ</td><td class="num" style="text-align:right">987 B</td></tr>
-      <tr><td>代数的データ型 + match</td><td class="num" style="text-align:right">3,846 B</td></tr>
+      <tr><td>Hello World</td><td class="num" style="text-align:right">476 B</td></tr>
+      <tr><td>Fibonacci（再帰）</td><td class="num" style="text-align:right">787 B</td></tr>
+      <tr><td>FizzBuzz</td><td class="num" style="text-align:right">910 B</td></tr>
+      <tr><td>クロージャ</td><td class="num" style="text-align:right">979 B</td></tr>
+      <tr><td>代数的データ型 + match</td><td class="num" style="text-align:right">3,828 B</td></tr>
     </table>
     <ul class="big">
       <li>.wasm は<strong>ブラウザ専用ではなく、どこでも動く小さな実行ファイル形式</strong></li>
-      <li>486 B の中にメモリ管理も文字列処理も同梱 — <strong>依存ゼロで自己完結</strong></li>
+      <li>476 B の中にメモリ管理も文字列処理も同梱 — <strong>依存ゼロで自己完結</strong></li>
       <li>最適化ツール wasm-opt をかけても 0〜4 バイトしか縮まない — <strong>ほぼフォーマットの下限</strong></li>
     </ul>
   </div>
@@ -216,7 +216,7 @@ Hello, world!</pre>
   <h2>自作言語 Almide — 今日の .wasm は全部これ製</h2>
   <ul class="big">
     <li>AI（LLM）が正確に書けることを目標に設計した自作言語。<strong>コンパイルすると Rust か WASM が出てくる</strong></li>
-    <li>WASM へは直接出力 — <strong>さっきの 486 B の正体</strong>。この小ささが、以降のデモ全部の土台</li>
+    <li>WASM へは直接出力 — <strong>さっきの 476 B の正体</strong>。この小ささが、以降のデモ全部の土台</li>
     <li>ネットやファイルなどの副作用が型に現れる設計 — WASM の<strong>「権限を絞って安全に動かす」文化と噛み合う</strong></li>
   </ul>
   <p class="note">言語そのものの話（AI との相性、メモリ安全の形式検証など）は今日は割愛 — github.com/almide</p>
@@ -247,7 +247,7 @@ Hello, world!</pre>
     <line x1="771" y1="6" x2="771" y2="412" stroke="#2c2c2a"/>
     <line x1="978" y1="6" x2="978" y2="412" stroke="#2c2c2a"/>
     <g font-size="17">
-      <g><text x="236" y="30" text-anchor="end" fill="#c3c2b7">Hello World</text><circle cx="293.3" cy="24" r="7" fill="#3987e5"/><text x="309" y="30" fill="#ffffff" font-weight="700" class="mono" font-size="15">0.5 KB</text></g>
+      <g><text x="236" y="30" text-anchor="end" fill="#c3c2b7">Hello World</text><circle cx="291.4" cy="24" r="7" fill="#3987e5"/><text x="307" y="30" fill="#ffffff" font-weight="700" class="mono" font-size="15">0.5 KB</text></g>
       <g><text x="236" y="64" text-anchor="end" fill="#c3c2b7">音が鳴るシンセ</text><circle cx="445.0" cy="58" r="7" fill="#3987e5"/><text x="461" y="64" fill="#ffffff" font-weight="700" class="mono" font-size="15">2.6 KB</text></g>
       <g><text x="236" y="98" text-anchor="end" fill="#c3c2b7">2D の棒グラフ描画</text><circle cx="515.6" cy="92" r="7" fill="#3987e5"/><text x="532" y="98" fill="#ffffff" font-weight="700" class="mono" font-size="15">5.8 KB</text></g>
       <g><text x="236" y="132" text-anchor="end" fill="#c3c2b7">3D の球の描画</text><circle cx="527.1" cy="126" r="7" fill="#3987e5"/><text x="543" y="132" fill="#ffffff" font-weight="700" class="mono" font-size="15">6.6 KB</text></g>
